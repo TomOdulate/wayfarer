@@ -1010,7 +1010,8 @@ function genItems() {
     rule.reqs.forEach(req => {
       const id = `${key}_${req.id}`;
       items.push({
-        id, ...req,
+        ...req,
+        id,
         deadline: addDays(dep, -req.days),
         settingKey: key,
         settingLabel: rule.label,
@@ -1032,7 +1033,8 @@ function genItems() {
       crule.reqs.forEach(req => {
         const id = `country_${c}_${req.id}`;
         items.push({
-          id, ...req,
+          ...req,
+          id,
           deadline: addDays(dep, -req.days),
           settingKey: 'vehicle',
           settingLabel: crule.label,
