@@ -846,6 +846,44 @@ const RULES = {
   },
 };
 
+/* Country-specific driving rules — injected when trip.settings.vehicle is true
+   AND the country appears in the itinerary stops (case-insensitive match). */
+const COUNTRY_RULES = {
+  france: {
+    label: 'France — Driving Rules', icon: '🇫🇷',
+    reqs: [
+      { id:'critair', title:"Crit'Air Clean Air Vignette",
+        desc:'Mandatory environmental sticker for driving in low-emission zones (Paris, Lyon, Grenoble, etc.). Order online from the official French government site.',
+        days:14, priority:'medium', cat:'Documents' },
+      { id:'breathalyzer', title:'NF-certified Breathalyzer / Safety Equipment',
+        desc:'Carry an NF-approved single-use breathalyzer, plus reflective vest and warning triangle. Required by French law.',
+        days:3, priority:'medium', cat:'Vehicle' },
+    ],
+  },
+  spain: {
+    label: 'Spain — Driving Rules', icon: '🇪🇸',
+    reqs: [
+      { id:'triangles', title:'Dual Warning Triangles',
+        desc:'Spain requires TWO warning triangles to be carried in the vehicle (one for front, one for rear of breakdown).',
+        days:3, priority:'medium', cat:'Vehicle' },
+      { id:'spare_specs', title:'Spare Glasses / Prescription Specs',
+        desc:'If your driving licence requires corrective lenses, you must carry a spare pair of glasses in the vehicle at all times.',
+        days:1, priority:'low', cat:'Vehicle' },
+    ],
+  },
+  portugal: {
+    label: 'Portugal — Driving Rules', icon: '🇵🇹',
+    reqs: [
+      { id:'via_verde', title:'Via Verde Toll Tag / Toll Registration',
+        desc:'Many Portuguese motorways are electronic-toll only. Register your vehicle with Via Verde or rent a transponder to avoid fines.',
+        days:7, priority:'high', cat:'Vehicle' },
+      { id:'no_dashcam', title:'Dashcam / Radar Detector Prohibition',
+        desc:'Portugal strictly prohibits dashcams and radar detectors. Remove or disable them before crossing the border — heavy fines apply.',
+        days:1, priority:'high', cat:'Vehicle' },
+    ],
+  },
+};
+
 const FLAGS = {
   'uk':'🇬🇧','united kingdom':'🇬🇧','great britain':'🇬🇧','britain':'🇬🇧',
   'england':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','wales':'🏴󠁧󠁢󠁷󠁬󠁳󠁿',
@@ -981,6 +1019,30 @@ function genItems() {
       });
     });
   });
+
+  // Country-specific driving rules — only when vehicle setting is on
+  if (trip.settings.vehicle) {
+    const seen = new Set();
+    trip.stops.forEach(s => {
+      const c = (s.country || '').toLowerCase().trim();
+      if (!c || seen.has(c)) return;
+      seen.add(c);
+      const crule = COUNTRY_RULES[c];
+      if (!crule) return;
+      crule.reqs.forEach(req => {
+        const id = `country_${c}_${req.id}`;
+        items.push({
+          id, ...req,
+          deadline: addDays(dep, -req.days),
+          settingKey: 'vehicle',
+          settingLabel: crule.label,
+          stopName: s.city || s.country,
+          completed: !!trip.done[id],
+        });
+      });
+    });
+  }
+
   return items.sort((a,b) => new Date(a.deadline) - new Date(b.deadline));
 }
 
