@@ -1,3 +1,6 @@
+const APP_VERSION = '1.2.0';
+const APP_BUILD = 11;
+
 /* ================================================================
    COMPLIANCE RULES
 ================================================================ */
@@ -1218,6 +1221,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Boot
+  const verEl = document.getElementById('brand-ver');
+  if (verEl) verEl.textContent = `v${APP_VERSION} #${APP_BUILD}`;
   renderAll();
   setStatusUI('saved');
 });
