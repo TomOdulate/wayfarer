@@ -375,11 +375,18 @@ function renderHome() {
     <div class="trip-card" onclick="openTrip('${trip.id}')">
       <div class="tc-head">
         <div class="tc-title"><span class="tc-title-txt">${esc(trip.name || 'Untitled Trip')}</span></div>
-        <button class="tc-menu" onclick="openTripMenu(event, '${trip.id}')" title="Options">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
-          </svg>
-        </button>
+        <div style="display: flex; gap: 4px;">
+          <button class="tc-action" onclick="event.stopPropagation(); exportTrip('${trip.id}')" title="Export trip as JSON">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
+          <button class="tc-menu" onclick="openTripMenu(event, '${trip.id}')" title="Options">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
+            </svg>
+          </button>
+        </div>
         <div class="dropdown" id="dropdown-${trip.id}" style="display:none">
           <button class="dropdown-item" onclick="event.stopPropagation(); openTrip('${trip.id}')">Open</button>
           <button class="dropdown-item" onclick="event.stopPropagation(); renameTrip('${trip.id}')">Rename</button>
@@ -1206,6 +1213,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Import trip button (home dashboard)
   document.getElementById('home-import-btn')?.addEventListener('click', importTripFlow);
+
+  // Export trip buttons
+  document.getElementById('itin-export-btn')?.addEventListener('click', () => {
+    const trip = getCurrentTrip();
+    if (trip) exportTrip(trip.id);
+  });
+  document.getElementById('settings-export-btn')?.addEventListener('click', () => {
+    const trip = getCurrentTrip();
+    if (trip) exportTrip(trip.id);
+  });
 
   // Populate country datalist from known FLAGS keys (title-cased)
   const dl = document.getElementById('countries-dl');

@@ -213,14 +213,14 @@
     .tc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
     .tc-title { font-size: 16px; font-weight: 700; position: relative; z-index: 1; flex: 1; min-width: 0; }
     .tc-title-txt { display: block; word-break: break-word; }
-    .tc-menu {
+    .tc-action, .tc-menu {
       width: 28px; height: 28px; border-radius: var(--rs);
       border: 1px solid var(--bdr); background: none; color: var(--t3);
       cursor: pointer; display: flex; align-items: center; justify-content: center;
       transition: var(--tr); flex-shrink: 0; position: relative; z-index: 2;
     }
-    .tc-menu:hover { background: var(--card-h); color: var(--t1); }
-    .tc-menu svg { width: 13px; height: 13px; }
+    .tc-action:hover, .tc-menu:hover { background: var(--card-h); color: var(--t1); }
+    .tc-action svg, .tc-menu svg { width: 13px; height: 13px; }
     .tc-body { position: relative; z-index: 1; }
     .tc-stat { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--t2); margin-bottom: 8px; }
     .tc-stat svg { width: 13px; height: 13px; color: var(--t3); flex-shrink: 0; }
@@ -690,12 +690,20 @@
             <div class="view-title">Itinerary</div>
             <div class="view-sub" id="itin-sub">Plan your route, stop by stop.</div>
           </div>
-          <button class="btn btn-primary" id="add-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Add Stop
-          </button>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-ghost" id="itin-export-btn" title="Export trip as JSON">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Export
+            </button>
+            <button class="btn btn-primary" id="add-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add Stop
+            </button>
+          </div>
         </div>
         <div class="stats-row" id="stats-row" style="display:none">
           <div class="stat-card"><div class="stat-val" id="s-stops">0</div><div class="stat-lbl">Destinations</div></div>
@@ -739,6 +747,12 @@
             <div class="view-title">Trip Settings</div>
             <div class="view-sub">Toggle variables to generate tailored compliance checklists.</div>
           </div>
+          <button class="btn btn-ghost" id="settings-export-btn" title="Export trip as JSON">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Export
+          </button>
         </div>
         <div class="trip-start-card">
           <div class="ts-info">
