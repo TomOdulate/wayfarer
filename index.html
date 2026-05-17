@@ -71,14 +71,10 @@
     .h-sep { width: 1px; height: 20px; background: var(--bdr); flex-shrink: 0; }
     .trip-name-wrap { flex: 1; min-width: 0; }
     #trip-name {
-      background: none; border: none; outline: none;
       color: var(--t1); font-size: 15px; font-weight: 500;
-      width: 100%; padding: 5px 9px; border-radius: var(--rx);
-      transition: var(--tr); cursor: text; font-family: inherit;
+      padding: 5px 9px; font-family: inherit;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    #trip-name:hover { background: var(--card); }
-    #trip-name:focus { background: var(--card); box-shadow: 0 0 0 2px var(--accent); }
-    #trip-name::placeholder { color: var(--t3); }
     .header-back {
       width: 28px; height: 28px; border-radius: var(--rs);
       border: 1px solid var(--bdr); background: none; color: var(--t2);
@@ -536,7 +532,7 @@
     </div>
     <div class="h-sep" id="h-sep" style="display:none"></div>
     <div class="trip-name-wrap" id="trip-name-wrap" style="display:none">
-      <input type="text" id="trip-name" placeholder="Name your trip…" maxlength="60" autocomplete="off">
+      <div id="trip-name"></div>
     </div>
     <div class="save-status" id="save-status" style="display:none">
       <div class="save-dot"></div>
@@ -1378,7 +1374,7 @@ function renderAll() {
 
   if (hasTrip) {
     const ni = document.getElementById('trip-name');
-    ni.value = trip.name || '';
+    ni.textContent = trip.name || '';
     renderSidebar();
     renderItinerary();
     renderCompliance();
@@ -1607,12 +1603,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Close menu on click outside
   document.addEventListener('click', closeAllMenus);
-
-  // Trip name
-  document.getElementById('trip-name').addEventListener('input', e=>{
-    const trip = getCurrentTrip();
-    if (trip) { trip.name = e.target.value; scheduleSave(); }
-  });
 
   // Setting cards
   document.querySelectorAll('.setting-card[data-setting]').forEach(card=>{
