@@ -132,6 +132,25 @@ const FLAGS = {
   'israel':'🇮🇱','jordan':'🇯🇴','russia':'🇷🇺','ukraine':'🇺🇦',
 };
 
+const COUNTRY_CODES = {
+  'uk':'gb','united kingdom':'gb','great britain':'gb','britain':'gb',
+  'england':'gb-eng','scotland':'gb-sct','wales':'gb-wls',
+  'france':'fr','spain':'es','germany':'de','italy':'it',
+  'portugal':'pt','netherlands':'nl','holland':'nl','belgium':'be',
+  'switzerland':'ch','austria':'at','greece':'gr','croatia':'hr',
+  'czech republic':'cz','czechia':'cz','hungary':'hu','poland':'pl',
+  'romania':'ro','bulgaria':'bg','sweden':'se','norway':'no',
+  'denmark':'dk','finland':'fi','ireland':'ie','iceland':'is',
+  'usa':'us','united states':'us','america':'us','canada':'ca','mexico':'mx',
+  'japan':'jp','china':'cn','south korea':'kr','korea':'kr',
+  'thailand':'th','vietnam':'vn','indonesia':'id','singapore':'sg',
+  'india':'in','turkey':'tr','egypt':'eg','morocco':'ma',
+  'australia':'au','new zealand':'nz','brazil':'br','argentina':'ar',
+  'chile':'cl','peru':'pe','south africa':'za','kenya':'ke',
+  'tanzania':'tz','dubai':'ae','uae':'ae','united arab emirates':'ae',
+  'israel':'il','jordan':'jo','russia':'ru','ukraine':'ua',
+};
+
 /* ================================================================
    STATE
 ================================================================ */
@@ -177,7 +196,13 @@ function getCurrentTrip() {
 }
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-function flag(c) { return FLAGS[(c||'').toLowerCase().trim()] || '🌍'; }
+function flag(c) {
+  const key = (c||'').toLowerCase().trim();
+  const code = COUNTRY_CODES[key];
+  const emoji = FLAGS[key] || '🌍';
+  if (!code) return emoji;
+  return `<img class="flag-img" src="https://flagcdn.com/40x30/${code}.png" alt="${emoji}" title="${c}">`;
+}
 function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function fmtDate(d) {
