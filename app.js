@@ -155,7 +155,7 @@ function loadState() {
     const raw = localStorage.getItem('wayfarer_global');
     const global = raw ? JSON.parse(raw) : GLOBAL_DEFAULTS;
     if (!global.trips) global.trips = [];
-    if (!global.activeTrip && global.trips.length > 0) global.activeTrip = global.trips[0].id;
+    if (global.activeTrip === undefined && global.trips.length > 0) global.activeTrip = global.trips[0].id;
     // Migrate trips to current schema
     global.trips.forEach(t => {
       if (t.tripStart === undefined) t.tripStart = '';
@@ -240,6 +240,7 @@ function appDialog({title, body, value, placeholder, confirmText='OK', cancelTex
     const cancel = document.getElementById('app-dialog-cancel');
     ok.textContent = confirmText;
     cancel.textContent = cancelText;
+    cancel.style.display = cancelText ? '' : 'none';
     ok.classList.toggle('btn-danger', !!danger);
     ok.classList.toggle('btn-primary', !danger);
 
@@ -449,10 +450,14 @@ function renderItinerary() {
   const statsEl = document.getElementById('stats-row');
   const sub     = document.getElementById('itin-sub');
 
+  const validLbl = document.getElementById('validate-btn');
   if (!trip.stops.length) {
-    route.innerHTML = ''; empty.style.display='block'; statsEl.style.display='none'; return;
+    route.innerHTML = ''; empty.style.display='block'; statsEl.style.display='none';
+    if (validLbl) validLbl.style.visibility = 'hidden';
+    return;
   }
   empty.style.display = 'none'; statsEl.style.display = 'grid';
+  if (validLbl) validLbl.style.visibility = 'visible';
 
   const nights = trip.stops.reduce((acc,s) => acc + (daysBetween(s.arrival,s.departure)||0), 0);
   const countries = [...new Set(trip.stops.map(s=>s.country?.toLowerCase()).filter(Boolean))].length || trip.stops.length;
@@ -479,12 +484,18 @@ function renderItinerary() {
          ondrop="onStopDrop(event,'${stop.id}')"
          ondragend="onStopDragEnd(event)">
       <div class="route-left">
-        <div class="route-marker ${mk}" title="Drag to reorder">${i+1}</div>
+        <div class="route-marker ${mk}">${i+1}</div>
         ${!isLast ? '<div class="route-line"></div>' : ''}
       </div>
       <div class="route-right">
         <div class="route-card">
           <div class="rc-head">
+            <div class="drag-handle" title="Drag to reorder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/>
+                <line x1="8" y1="14" x2="16" y2="14"/><line x1="8" y1="18" x2="16" y2="18"/>
+              </svg>
+            </div>
             <div class="rc-dest">
               <span class="dest-flag">${flag(stop.country)}</span>
               <div>
@@ -510,13 +521,13 @@ function renderItinerary() {
             </div>
           </div>
           <div class="date-row">
-            ${stop.arrival ? `<div class="date-chip">
+            ${stop.arrival ? `<div class="date-chip" data-stop="${stop.id}" data-field="arrival">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
                 <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
               <span class="dlbl">Arrive</span>${fmtDate(stop.arrival)}</div>` : ''}
-            ${stop.departure ? `<div class="date-chip">
+            ${stop.departure ? `<div class="date-chip" data-stop="${stop.id}" data-field="departure">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
                 <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
@@ -538,6 +549,8 @@ function renderItinerary() {
       </div>
     </div>`;
   }).join('');
+
+  validateItinerary();
 }
 
 /* ================================================================
@@ -717,7 +730,12 @@ function renderAll() {
     renderCompliance();
     renderSettings();
     renderBadges();
+    // Ensure a trip view is shown; preserve whichever tab the user is on unless we're on the home screen
+    if (!document.querySelector('.view.active') || document.getElementById('view-home')?.classList.contains('active')) {
+      switchView('itinerary');
+    }
   } else {
+    switchView('home');
     renderHome();
   }
 }
@@ -742,7 +760,7 @@ function openTrip(tripId) {
 
 function backToHome() {
   G.activeTrip = null;
-  scheduleSave();
+  localStorage.setItem('wayfarer_global', JSON.stringify(G));
   renderAll();
   switchView('home');
   openMenuTrip = null;
@@ -1009,6 +1027,48 @@ function setTripStart(value) {
 }
 
 /* ================================================================
+   VALIDATE ITINERARY
+================================================================ */
+function validateItinerary() {
+  // Clear any existing error highlights and reset label colour
+  document.querySelectorAll('.date-chip-error').forEach(el => el.classList.remove('date-chip-error'));
+  const _lbl = document.getElementById('validate-btn');
+  if (_lbl) _lbl.style.color = '';
+
+  const trip = getCurrentTrip();
+  if (!trip || !trip.stops.length) return;
+
+  const errors = new Set(); // set of "stopId:field" strings
+
+  trip.stops.forEach((stop, i) => {
+    // Arrival must be before departure within the same stop
+    if (stop.arrival && stop.departure && stop.arrival > stop.departure) {
+      errors.add(`${stop.id}:arrival`);
+      errors.add(`${stop.id}:departure`);
+    }
+    // This stop's departure must be on or before the next stop's arrival
+    const next = trip.stops[i + 1];
+    if (next && stop.departure && next.arrival && stop.departure > next.arrival) {
+      errors.add(`${stop.id}:departure`);
+      errors.add(`${next.id}:arrival`);
+    }
+  });
+
+  const lbl = document.getElementById('validate-btn');
+  if (errors.size === 0) {
+    if (lbl) lbl.style.color = '#22c55e';
+    return;
+  }
+
+  if (lbl) lbl.style.color = 'var(--red)';
+  errors.forEach(key => {
+    const [stopId, field] = key.split(':');
+    const chip = document.querySelector(`.date-chip[data-stop="${stopId}"][data-field="${field}"]`);
+    if (chip) chip.classList.add('date-chip-error');
+  });
+}
+
+/* ================================================================
    STOP REORDERING (drag-drop)
 ================================================================ */
 let dragSrcId = null;
@@ -1156,6 +1216,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Header
   document.getElementById('header-back').addEventListener('click', backToHome);
+
+  // Validate
+  document.getElementById('validate-btn').addEventListener('click', validateItinerary);
 
   // Add stop triggers
   document.getElementById('add-btn').addEventListener('click', openAdd);
