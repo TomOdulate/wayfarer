@@ -1,5 +1,5 @@
-const CACHE = 'wayfarer-v19';
-const SHELL = ['/', '/index.html', '/app.js', '/manifest.json', '/icon.svg', '/favicon.svg'];
+const CACHE = 'wayfarer-v21';
+const SHELL = ['./', './index.html', './app.js', './manifest.json', './icon.svg', './favicon.svg'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
