@@ -14,4 +14,8 @@ js = js
   .replace(/^const APP_BUILD = \d+;/m,       `const APP_BUILD = ${buildNum};`);
 fs.writeFileSync('app.js', js);
 
+let sw = fs.readFileSync('sw.js', 'utf8');
+sw = sw.replace(/wayfarer-v\d+/g, `wayfarer-v${buildNum}`);
+fs.writeFileSync('sw.js', sw);
+
 console.log(`Stamped v${version} build #${buildNum}`);

@@ -1,5 +1,5 @@
 const APP_VERSION = '1.2.0';
-const APP_BUILD = 11;
+const APP_BUILD = 19;
 
 /* ================================================================
    COMPLIANCE RULES
