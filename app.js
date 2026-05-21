@@ -1,5 +1,5 @@
 const APP_VERSION = '1.2.0';
-const APP_BUILD = 21;
+const APP_BUILD = 22;
 
 /* ================================================================
    COMPLIANCE RULES
@@ -478,10 +478,12 @@ function renderItinerary() {
   const validLbl = document.getElementById('validate-btn');
   if (!trip.stops.length) {
     route.innerHTML = ''; empty.style.display='block'; statsEl.style.display='none';
+    document.getElementById('itin-toolbar').style.display = 'none';
     if (validLbl) validLbl.style.visibility = 'hidden';
     return;
   }
   empty.style.display = 'none'; statsEl.style.display = 'grid';
+  document.getElementById('itin-toolbar').style.display = 'flex';
   if (validLbl) validLbl.style.visibility = 'visible';
 
   const nights = trip.stops.reduce((acc,s) => acc + (daysBetween(s.arrival,s.departure)||0), 0);
@@ -1230,6 +1232,38 @@ function exportICS() {
 }
 
 /* ================================================================
+   ITINERARY EXPORT / PRINT
+================================================================ */
+function exportItineraryCSV() {
+  const trip = getCurrentTrip();
+  if (!trip || !trip.stops.length) {
+    appAlert('Nothing to export', 'Add at least one stop to export the itinerary.');
+    return;
+  }
+  const rows = [['Stop', 'City', 'Country', 'Arrival', 'Departure', 'Nights', 'Notes']];
+  trip.stops.forEach((s, i) => {
+    const nights = (s.arrival && s.departure) ? daysBetween(s.arrival, s.departure) : '';
+    rows.push([
+      i + 1,
+      s.city || '',
+      s.country || '',
+      s.arrival ? fmtDate(s.arrival) : '',
+      s.departure ? fmtDate(s.departure) : '',
+      nights,
+      (s.notes || '').replace(/\r?\n/g, ' '),
+    ]);
+  });
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+  downloadBlob(`wayfarer-${safeFilename(trip.name)}-itinerary.csv`, 'text/csv', csv);
+}
+
+function printItinerary() {
+  document.body.classList.add('print-itinerary');
+  window.print();
+  window.addEventListener('afterprint', () => document.body.classList.remove('print-itinerary'), { once: true });
+}
+
+/* ================================================================
    INIT
 ================================================================ */
 document.addEventListener('DOMContentLoaded', () => {
@@ -1294,6 +1328,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Trip start date
   document.getElementById('trip-start-date')?.addEventListener('change', (e) => setTripStart(e.target.value));
+
+  // Itinerary export / print
+  document.getElementById('itin-export-csv')?.addEventListener('click', exportItineraryCSV);
+  document.getElementById('itin-print')?.addEventListener('click', printItinerary);
 
   // Import trip button (home dashboard)
   document.getElementById('home-import-btn')?.addEventListener('click', importTripFlow);

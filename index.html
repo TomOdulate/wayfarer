@@ -537,7 +537,7 @@
       color-scheme: dark; }
 
     /* Compliance toolbar */
-    .c-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .c-toolbar, .itin-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 
     /* Compliance item actions + note */
     .ti-check { cursor: pointer; }
@@ -584,10 +584,13 @@
       body { background: #fff !important; color: #000 !important; }
       .header, .sidebar, .header-back, .nav-btn, .view-hd .btn, .no-print, .c-toolbar,
       .save-status, .h-sep, #trip-name-wrap, .modal-bg, .empty-state, .c-filters,
-      #view-home, #view-itinerary, #view-settings { display: none !important; }
-      #view-compliance { display: block !important; }
+      #view-home, #view-settings { display: none !important; }
       .view { display: block !important; padding: 0 !important; }
       .app-body, .main { display: block !important; padding: 0 !important; background: #fff !important; }
+
+      /* Compliance print (default) */
+      body:not(.print-itinerary) #view-itinerary { display: none !important; }
+      body:not(.print-itinerary) #view-compliance { display: block !important; }
       .tl-item { background: #fff !important; color: #000 !important; border: 1px solid #ccc !important;
         page-break-inside: avoid; box-shadow: none !important; margin-bottom: 8px; }
       .ti-check { border-color: #888 !important; }
@@ -598,6 +601,24 @@
       .progress-bar-wrap { color: #000 !important; }
       .progress-track { background: #ddd !important; }
       .progress-fill { background: #555 !important; }
+
+      /* Itinerary print */
+      body.print-itinerary #view-compliance { display: none !important; }
+      body.print-itinerary #view-itinerary { display: block !important; }
+      body.print-itinerary .view-hd { display: flex !important; margin-bottom: 16px !important; }
+      body.print-itinerary .view-title { color: #000 !important; }
+      body.print-itinerary .view-sub { color: #555 !important; }
+      body.print-itinerary #validate-btn { display: none !important; }
+      body.print-itinerary .stats-row { display: grid !important; margin-bottom: 20px !important; border: 1px solid #e0e0e0 !important; border-radius: 8px !important; }
+      body.print-itinerary .stat-card { background: #f7f7f7 !important; }
+      body.print-itinerary .stat-val, body.print-itinerary .stat-lbl { color: #000 !important; }
+      body.print-itinerary .route-card { background: #fff !important; border: 1px solid #ddd !important; box-shadow: none !important; page-break-inside: avoid; }
+      body.print-itinerary .rc-city, body.print-itinerary .rc-country, body.print-itinerary .rc-head { color: #000 !important; }
+      body.print-itinerary .date-chip { color: #333 !important; background: #f5f5f5 !important; border-color: #ddd !important; }
+      body.print-itinerary .stop-notes { color: #444 !important; background: #f9f9f9 !important; border-color: #e0e0e0 !important; }
+      body.print-itinerary .transit-pill { background: #f0f0f0 !important; color: #555 !important; }
+      body.print-itinerary .route-line { border-color: #ccc !important; }
+      body.print-itinerary .act-btn, body.print-itinerary .drag-handle { display: none !important; }
     }
 
     /* ── Responsive ──────────────────────────────────────────────────── */
@@ -724,6 +745,16 @@
               Add Stop
             </button>
           </div>
+        </div>
+        <div class="itin-toolbar no-print" id="itin-toolbar" style="display:none">
+          <button class="btn btn-ghost btn-sm" id="itin-export-csv">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Export CSV
+          </button>
+          <button class="btn btn-ghost btn-sm" id="itin-print">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print
+          </button>
         </div>
         <div class="stats-row" id="stats-row" style="display:none">
           <div class="stat-card"><div class="stat-val" id="s-stops">0</div><div class="stat-lbl">Destinations</div></div>
